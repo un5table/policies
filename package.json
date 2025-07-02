@@ -1,0 +1,5 @@
+{
+  "name": "higher-ed-policy-library",
+  "private": true,
+  "workspaces": ["backend", "frontend"]
+}

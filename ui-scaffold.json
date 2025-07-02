@@ -1,0 +1,278 @@
+{
+  "pages": [
+    {
+      "id": "policyListPage",
+      "name": "Policy List",
+      "type": "dashboard",
+      "components": [
+        {
+          "type": "Header",
+          "props": {
+            "title": "Policy Library",
+            "userProfile": true
+          }
+        },
+        {
+          "type": "Filters",
+          "props": {
+            "fields": [
+              {
+                "type": "TextInput",
+                "label": "Search",
+                "bind": "searchQuery"
+              },
+              {
+                "type": "Dropdown",
+                "label": "Status",
+                "options": ["Draft", "Published", "Archived"],
+                "bind": "statusFilter"
+              }
+              // Add dynamically generated dropdowns for metadata here
+            ]
+          }
+        },
+        {
+          "type": "Table",
+          "props": {
+            "bind": "policies",
+            "columns": [
+              {
+                "field": "title",
+                "label": "Policy Title",
+                "type": "link",
+                "linkTo": "policyEditPage"
+              },
+              {
+                "field": "status",
+                "label": "Status"
+              },
+              {
+                "field": "startDate",
+                "label": "Start Date"
+              },
+              {
+                "field": "endDate",
+                "label": "End Date"
+              },
+              {
+                "field": "lastEdited",
+                "label": "Last Edited"
+              },
+              {
+                "field": "metadataTags",
+                "label": "Tags"
+              },
+              {
+                "field": "actions",
+                "label": "Actions",
+                "type": "buttonGroup",
+                "buttons": [
+                  {
+                    "label": "Edit",
+                    "action": "navigate",
+                    "targetPageId": "policyEditPage"
+                  },
+                  {
+                    "label": "Archive",
+                    "action": "archivePolicy"
+                  },
+                  {
+                    "label": "Delete",
+                    "action": "deletePolicy"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "Button",
+          "props": {
+            "label": "Create New Policy",
+            "action": "navigate",
+            "targetPageId": "policyEditPage"
+          }
+        }
+      ]
+    },
+    {
+      "id": "policyEditPage",
+      "name": "Edit Policy",
+      "type": "form",
+      "components": [
+        {
+          "type": "Form",
+          "props": {
+            "model": "policy",
+            "fields": [
+              {
+                "type": "TextInput",
+                "label": "Policy Title",
+                "bind": "title",
+                "required": true
+              },
+              {
+                "type": "RichTextEditor",
+                "label": "Policy Content",
+                "bind": "content",
+                "required": true
+              },
+              {
+                "type": "MetadataSection",
+                "label": "Metadata Attributes",
+                "bind": "metadata",
+                "dynamicFields": true
+              },
+              {
+                "type": "FileUploader",
+                "label": "Attachments (.pdf, .docx)",
+                "bind": "attachments",
+                "maxSizeMB": 10,
+                "allowedTypes": [".pdf", ".docx"]
+              },
+              {
+                "type": "DatePicker",
+                "label": "Start Date",
+                "bind": "startDate"
+              },
+              {
+                "type": "DatePicker",
+                "label": "End Date",
+                "bind": "endDate"
+              },
+              {
+                "type": "Checkbox",
+                "label": "Requires Approval",
+                "bind": "requiresApproval"
+              },
+              {
+                "type": "Dropdown",
+                "label": "Select Supervisor",
+                "bind": "supervisor",
+                "visibleIf": "requiresApproval == true"
+              }
+            ],
+            "actions": [
+              {
+                "label": "Save Draft",
+                "action": "saveDraft"
+              },
+              {
+                "label": "Submit for Approval",
+                "action": "submitForApproval"
+              },
+              {
+                "label": "Publish Now",
+                "action": "publishPolicy",
+                "visibleIf": "userRole == 'SuperAdmin' || userRole == 'Admin'"
+              }
+            ]
+          }
+        },
+        {
+          "type": "Tabs",
+          "props": {
+            "tabs": [
+              {
+                "label": "Edit Policy",
+                "contentComponentId": "policyEditForm"
+              },
+              {
+                "label": "Version History",
+                "contentComponentId": "versionHistoryTable"
+              }
+            ]
+          }
+        },
+        {
+          "id": "versionHistoryTable",
+          "type": "Table",
+          "props": {
+            "bind": "policyVersions",
+            "columns": [
+              {
+                "field": "versionNumber",
+                "label": "Version"
+              },
+              {
+                "field": "editedDate",
+                "label": "Edited Date"
+              },
+              {
+                "field": "editorName",
+                "label": "Editor"
+              },
+              {
+                "field": "actions",
+                "label": "Actions",
+                "type": "buttonGroup",
+                "buttons": [
+                  {
+                    "label": "View Diff",
+                    "action": "viewDiff"
+                  },
+                  {
+                    "label": "Rollback",
+                    "action": "rollbackVersion"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "policyPublicView",
+      "name": "Public Policy View",
+      "type": "view",
+      "components": [
+        {
+          "type": "Header",
+          "props": {
+            "title": "Policy Library",
+            "languageSelector": true,
+            "searchBar": true
+          }
+        },
+        {
+          "type": "Breadcrumbs",
+          "props": {
+            "items": ["Home", "Policies", "{{policy.title}}"]
+          }
+        },
+        {
+          "type": "Title",
+          "props": {
+            "text": "{{policy.title}}"
+          }
+        },
+        {
+          "type": "TagList",
+          "props": {
+            "tags": "{{policy.metadataTags}}"
+          }
+        },
+        {
+          "type": "RichTextViewer",
+          "props": {
+            "content": "{{policy.content}}"
+          }
+        },
+        {
+          "type": "AttachmentList",
+          "props": {
+            "files": "{{policy.attachments}}"
+          }
+        },
+        {
+          "type": "Button",
+          "props": {
+            "label": "Download as PDF",
+            "action": "downloadPDF"
+          }
+        }
+      ]
+    }
+  ]
+}
