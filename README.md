@@ -1,3 +1,4 @@
+
 # Higher Ed Policy Document Library
 
 This is a minimum viable product (MVP) for a secure policy document management system for universities, based on the provided PRD.
@@ -26,3 +27,6 @@ This is a minimum viable product (MVP) for a secure policy document management s
 
 ---
 This MVP is a starting point and can be extended per the full PRD.
+
+# policies
+Policy Library Manager for Higher Ed
