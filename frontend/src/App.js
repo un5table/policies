@@ -435,14 +435,14 @@ function PolicyPublicView() {
             {policy.attachments.map(att => (
               <li key={att.id} className="flex items-center gap-2">
                 <a
-                  href={`/api/attachments/${att.id}/download`}
+                  href={`http://localhost:4000/api/attachments/${att.id}/download`}
                   className="text-teal-400 underline hover:text-teal-200"
                   target="_blank"
                   rel="noopener noreferrer"
                   download
                   onClick={e => {
                     // Try to fetch the file first to check if it exists
-                    fetch(`/api/attachments/${att.id}/download`, { method: 'HEAD' })
+                    fetch(`http://localhost:4000/api/attachments/${att.id}/download`, { method: 'HEAD' })
                       .then(resp => {
                         if (!resp.ok) {
                           e.preventDefault();
