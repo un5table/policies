@@ -1,27 +1,14 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 
-const TABS = [
+
+
+
   { key: 'Department', label: 'Departments' },
   { key: 'Division', label: 'Divisions' },
   { key: 'Subject', label: 'Subjects' },
-  { key: 'Contact', label: 'Contacts' },
-];
-
-const API_BASE = 'http://localhost:4000/api';
-
-function MetadataAdmin() {
-  const [tab, setTab] = useState('Department');
-  const [items, setItems] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const [form, setForm] = useState({});
-  const [editingId, setEditingId] = useState(null);
-
   useEffect(() => {
     setForm({}); setEditingId(null);
     fetchItems();
-    // eslint-disable-next-line
+     eslint-disable-next-line
   }, [tab]);
 
   const fetchItems = async () => {

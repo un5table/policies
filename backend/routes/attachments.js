@@ -9,6 +9,18 @@ const router = express.Router();
 const UPLOAD_DIR = path.join(__dirname, '..', 'uploads');
 if (!fs.existsSync(UPLOAD_DIR)) fs.mkdirSync(UPLOAD_DIR);
 
+// Setup log file for backend logs
+const LOG_DIR = path.join(__dirname, '..', 'logs');
+const LOG_FILE = path.join(LOG_DIR, 'backend.log');
+if (!fs.existsSync(LOG_DIR)) fs.mkdirSync(LOG_DIR);
+function logLine(line) {
+  const ts = new Date().toISOString();
+  const fullLine = `[${ts}] ${line}\n`;
+  fs.appendFileSync(LOG_FILE, fullLine);
+  console.log(line);
+}
+
+
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, UPLOAD_DIR);
@@ -64,6 +76,38 @@ router.get('/:id/metadata', async (req, res) => {
     if (!attachment) return res.status(404).json({ error: 'Not found' });
     res.json(attachment);
   } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// DELETE /api/attachments/:id - delete attachment by id
+router.delete('/:id', async (req, res) => {
+  const attachmentId = req.params.id;
+  logLine(`[DELETE] Requested to delete attachment id: ${attachmentId}`);
+  try {
+    const attachment = await db.Attachment.findByPk(attachmentId);
+    if (!attachment) {
+      logLine(`[DELETE] Attachment id ${attachmentId} not found in DB.`);
+      return res.status(404).json({ error: 'Not found' });
+    }
+    // Remove file from disk
+    const filepath = path.join(UPLOAD_DIR, attachment.filename);
+    logLine(`[DELETE] Attachment found. Filepath: ${filepath}`);
+    if (fs.existsSync(filepath)) {
+      try {
+        fs.unlinkSync(filepath);
+        logLine(`[DELETE] File deleted: ${filepath}`);
+      } catch (fileErr) {
+        logLine(`[DELETE] Failed to delete file: ${filepath} - ${fileErr}`);
+      }
+    } else {
+      logLine(`[DELETE] File does not exist on disk: ${filepath}`);
+    }
+    await attachment.destroy();
+    logLine(`[DELETE] Attachment record deleted from DB: ${attachmentId}`);
+    res.json({ success: true });
+  } catch (err) {
+    logLine(`[DELETE] Error deleting attachment id ${attachmentId}: ${err}`);
     res.status(500).json({ error: err.message });
   }
 });

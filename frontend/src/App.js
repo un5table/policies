@@ -1,12 +1,33 @@
 import React, { useState } from 'react';
+
+// Error Boundary for catching UI errors
+class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, errorInfo: null };
+  }
+  static getDerivedStateFromError(error) {
+    return { hasError: true, errorInfo: error };
+  }
+  componentDidCatch(error, errorInfo) {
+    console.error('UI Error:', error, errorInfo);
+  }
+  render() {
+    if (this.state.hasError) {
+      return <div style={{ color: 'red', padding: 32 }}>An unexpected error occurred in the UI.<br/>{this.state.errorInfo && this.state.errorInfo.toString()}</div>;
+    }
+    return this.props.children;
+  }
+}
+
 import { BrowserRouter as Router, Routes, Route, Link, useParams, useNavigate } from 'react-router-dom';
 import WysiwygEditor from './components/WysiwygEditor';
 import AuthUI from './components/AuthUI';
-import { MetadataMultiSelect, ContactMultiSelect } from './components/MetadataSelectors';
+
 import AttachmentUploader from './components/AttachmentUploader';
 import VersionHistoryTable from './components/VersionHistoryTable';
 import PolicyVersionHistory from './components/PolicyVersionHistory';
-import MetadataAdmin from './components/MetadataAdmin';
+
 import AdminMenu from './components/AdminMenu';
 import UserAdmin from './components/UserAdmin';
 import MyAccount from './components/MyAccount';
@@ -74,6 +95,17 @@ function Header({ user, onLogout }) {
 }
 
 import * as api from './api';
+
+// Helper for logging API errors
+export async function logApiError(fn, ...args) {
+  try {
+    return await fn(...args);
+  } catch (err) {
+    console.error('API Error:', err);
+    throw err;
+  }
+}
+
 import { useEffect } from 'react';
 
 function PolicyList() {
@@ -84,7 +116,7 @@ function PolicyList() {
 
   useEffect(() => {
     setLoading(true);
-    api.fetchPolicies()
+    logApiError(api.fetchPolicies)
       .then(data => {
         setPolicies(data);
         setLoading(false);
@@ -154,7 +186,7 @@ function PolicyEdit() {
   const navigate = useNavigate();
   const [content, setContent] = useState('');
   const [title, setTitle] = useState('');
-  const [metadata, setMetadata] = useState([]);
+  
   const [attachments, setAttachments] = useState([]);
   const [status, setStatus] = useState('Draft');
   const [startDate, setStartDate] = useState('');
@@ -168,11 +200,11 @@ function PolicyEdit() {
   useEffect(() => {
     if (id) {
       setLoading(true);
-      api.fetchPolicy(id)
+      logApiError(api.fetchPolicy, id)
         .then(policy => {
           setTitle(policy.title || '');
           setContent(policy.content || '');
-          setMetadata(policy.metadata?.map(m => ({ key: m.key, value: m.value })) || []);
+          
           setAttachments(policy.attachments || []);
           setStatus(policy.status || 'Draft');
           setStartDate(policy.startDate ? policy.startDate.slice(0,10) : '');
@@ -186,7 +218,7 @@ function PolicyEdit() {
     } else {
       setTitle('');
       setContent('');
-      setMetadata([]);
+      
       setAttachments([]);
       setStatus('Draft');
       setStartDate('');
@@ -200,17 +232,16 @@ function PolicyEdit() {
       setError('Title, content, start date, and end date are required');
       return;
     }
-    if (!changeNote) {
-      setError('A change note is required for all edits.');
-      return;
-    }
     setError(null);
     try {
-      const data = { title, content, metadata, status, startDate, endDate, attachments, changeNote };
+      const data = { title, content, status, startDate, endDate, attachments };
+      if (changeNote && changeNote.trim() !== "") {
+        data.changeNote = changeNote;
+      }
       if (id) {
-        await api.updatePolicy(id, data);
+        await logApiError(api.updatePolicy, id, data);
       } else {
-        await api.createPolicy(data);
+        await logApiError(api.createPolicy, data);
       }
       setChangeNote('');
       navigate('/');
@@ -268,40 +299,19 @@ function PolicyEdit() {
           </div>
         </div>
         <WysiwygEditor value={content} onChange={setContent} />
-        <MetadataMultiSelect
-          label="Departments"
-          type="Department"
-          selected={metadata.departments || []}
-          onChange={ids => setMetadata({ ...metadata, departments: ids })}
-          placeholder="Search departments..."
-        />
-        <MetadataMultiSelect
-          label="Divisions"
-          type="Division"
-          selected={metadata.divisions || []}
-          onChange={ids => setMetadata({ ...metadata, divisions: ids })}
-          placeholder="Search divisions..."
-        />
-        <MetadataMultiSelect
-          label="Subjects"
-          type="Subject"
-          selected={metadata.subjects || []}
-          onChange={ids => setMetadata({ ...metadata, subjects: ids })}
-          placeholder="Search subjects..."
-        />
-        <ContactMultiSelect
-          selected={metadata.contacts || []}
-          onChange={ids => setMetadata({ ...metadata, contacts: ids })}
-        />
+        
+        
+        
+        
         <AttachmentUploader attachments={attachments} onChange={setAttachments} policyId={id} />
         <div>
-          <label className="block mb-1 text-gray-400 mt-6">Change Note <span className="text-red-400">*</span></label>
+          <label className="block mb-1 text-gray-400 mt-6">Change Note</label>
           <textarea
             className="bg-gray-800 text-gray-100 px-3 py-2 rounded w-full mb-2"
             value={changeNote}
             onChange={e => setChangeNote(e.target.value)}
-            placeholder="Describe what changed in this version..."
-            required
+            placeholder="Enter a note about this change (optional)"
+            rows={2}
           />
         </div>
         <div className="flex gap-4 mt-6">
@@ -491,7 +501,7 @@ function App() {
             <Route path="/public" element={<PublicPolicyList />} />
             <Route path="/view/:id" element={<PolicyPublicView />} />
             {/* Protected routes */}
-            <Route path="/admin/metadata" element={auth ? <><AdminMenu /><MetadataAdmin /></> : <AuthUI onLogin={setAuth} />} />
+            
             <Route path="/admin/users" element={auth ? <><AdminMenu /><UserAdmin /></> : <AuthUI onLogin={setAuth} />} />
             <Route path="/admin/reports" element={auth ? <><AdminMenu /><PolicyHistoryReport /></> : <AuthUI onLogin={setAuth} />} />
             <Route path="/edit/:id" element={auth ? <><AdminMenu /><PolicyEdit /></> : <AuthUI onLogin={setAuth} />} />
@@ -507,4 +517,11 @@ function App() {
   );
 }
 
-export default App;
+// Wrap App in ErrorBoundary for global error catching
+const WrappedApp = () => (
+  <ErrorBoundary>
+    <App />
+  </ErrorBoundary>
+);
+
+export default WrappedApp;

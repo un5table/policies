@@ -1,9 +1,9 @@
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
 
-const API_BASE = 'http://localhost:4000/api';
 
-function MetadataMultiSelect({ label, type, selected, onChange, placeholder }) {
+
+
+
+
   const [options, setOptions] = useState([]);
   const [search, setSearch] = useState('');
 
@@ -56,7 +56,7 @@ function MetadataMultiSelect({ label, type, selected, onChange, placeholder }) {
   );
 }
 
-function ContactMultiSelect({ selected, onChange }) {
+
   const [options, setOptions] = useState([]);
   const [search, setSearch] = useState('');
 

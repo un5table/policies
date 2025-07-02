@@ -3,7 +3,6 @@ import { Link, useLocation } from 'react-router-dom';
 
 const ADMIN_LINKS = [
   { to: '/', label: 'Manage Policies' },
-  { to: '/admin/metadata', label: 'Manage Metadata' },
   { to: '/admin/users', label: 'Manage Users' },
   { to: '/admin/reports', label: 'Reports' },
   // Add more admin pages here as needed

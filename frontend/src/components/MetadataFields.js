@@ -1,13 +1,6 @@
-import React from 'react';
 
-function MetadataFields({ metadata, onChange, editable = true }) {
-  // metadata: array of { key, value }
-  return (
-    <div className="mb-4">
-      <label className="block font-semibold mb-1">Metadata Attributes</label>
-      <div className="flex flex-col gap-2">
-        {metadata.map((item, idx) => (
-          <div key={idx} className="flex gap-2 items-center">
+
+```
             <input
               className="border px-2 py-1 rounded flex-1"
               value={item.key}

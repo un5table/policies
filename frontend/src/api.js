@@ -37,7 +37,15 @@ export async function uploadAttachment(file, policyId) {
   return res.data.attachment;
 }
 
-export async function deleteAttachment(id) {
-  // For future use: implement delete endpoint on backend
-  return { success: false, message: 'Not implemented' };
+export async function deleteAttachment(attachmentId) {
+  const url = `${API_BASE}/attachments/${attachmentId}`;
+  console.log('[deleteAttachment] DELETE URL:', url);
+  try {
+    const res = await axios.delete(url);
+    console.log('[deleteAttachment] Success:', res.data);
+    return res.data;
+  } catch (err) {
+    console.error('[deleteAttachment] Error:', err);
+    throw err;
+  }
 }

@@ -80,7 +80,24 @@ function PolicyVersionHistory({ policyId, currentVersion, onRevert }) {
                 <td className="p-3 border-b border-gray-800">{new Date(v.editedDate).toLocaleString()}</td>
                 <td className="p-3 border-b border-gray-800">{v.editor ? v.editor.username : v.editorId}</td>
                 <td className="p-3 border-b border-gray-800">{v.changeNote}</td>
-                <td className="p-3 border-b border-gray-800">{v.attachments && v.attachments.length > 0 ? v.attachments.map(a => a.filename).join(', ') : <span className="text-gray-500">None</span>}</td>
+                <td className="p-3 border-b border-gray-800">{
+                  v.attachments && v.attachments.length > 0 ? (
+                    v.attachments.map(a => (
+                      <a
+                        key={a.id || a.filename}
+                        href={`http://localhost:4000/uploads/${encodeURIComponent(a.filename)}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-teal-400 hover:text-teal-200 underline text-xs mr-2"
+                        download={a.originalName || a.filename}
+                      >
+                        {a.originalName || a.filename}
+                      </a>
+                    ))
+                  ) : (
+                    <span className="text-gray-500">None</span>
+                  )
+                }</td>
                 <td className="p-3 border-b border-gray-800 flex gap-2">
                   <button className="text-teal-400 hover:text-teal-200" onClick={()=>handleDiff(v)}>View</button>
                   <button className="text-yellow-400 hover:text-yellow-200" onClick={()=>handleRevert(v.id)}>Revert</button>
